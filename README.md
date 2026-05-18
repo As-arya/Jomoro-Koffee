@@ -17,6 +17,6 @@ Tech Stack
 
 Services
 
-- Auth Service (port 3001) menangani registrasi, login, dan JWT
-- Product Service (port 3002) menangani produk dan kategori
-- Transaction Service (port 3003) menangani keranjang dan pesanan
+- Auth Service         : menangani registrasi, login, dan JWT
+- Product Service      : menangani produk dan kategori
+- Transaction Service  : menangani keranjang dan pesanan
