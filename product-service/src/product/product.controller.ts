@@ -53,15 +53,13 @@ export class ProductController {
 
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
-    @ApiBody({ schema: { type: 'object', properties: { quantity: { type: 'number', example: 3 } } } }) // <--- TAMBAHIN BARIS INI
+    @ApiBody({ schema: { type: 'object', properties: { quantity: { type: 'number', example: 3 } } } })
     @Post('admin/products/:id/reduce')
     reduceStock(
-        @Request() req,
-        @Param('id', ParseIntPipe) id: number,
-        @Body('quantity', ParseIntPipe) quantity: number
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quantity', ParseIntPipe) quantity: number
     ) {
-        if (req.user.role !== 'ADMIN') throw new UnauthorizedException('Access denied. Admin only.');
-        return this.productService.reduceStock(id, quantity);
+    return this.productService.reduceStock(id, quantity);
     }
 
     @ApiBearerAuth()
