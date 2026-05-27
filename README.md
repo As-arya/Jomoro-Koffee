@@ -1,7 +1,19 @@
-# Jomoro Koffee Backend
+# Jomoro-Koffee
+Jomoro Koffee_Backend API
 
-Backend API untuk Jomoro Koffee menggunakan arsitektur microservice dengan
-NestJS, TypeScript, MySQL, Prisma, JWT Passport, Swagger, dan class-validator.
+Sistem backend untuk platform kopi Jomoro Koffee yang dibangun menggunakan
+arsitektur microservice. Terdiri dari tiga service terpisah yang masing-masing
+menangani autentikasi pengguna, manajemen produk, dan proses transaksi.
+
+Tech Stack
+
+- NestJS
+- TypeScript
+- MySQL (XAMPP)
+- Prisma ORM
+- JWT dan Passport
+- Swagger API Documentation
+- class-validator
 
 ## Services
 
@@ -32,21 +44,11 @@ cd ../transaction-service
 npm install
 ```
 
-Copy contoh environment:
+Buat environment
 
-```powershell
-copy auth-service\.env.example auth-service\.env
-copy product-service\.env.example product-service\.env
-copy transaction-service\.env.example transaction-service\.env
-```
 
-Import SQL ke MySQL:
+Import SQL ke MySQL
 
-```text
-sql/db_auth.sql
-sql/db_product.sql
-sql/db_transaction.sql
-```
 
 Generate Prisma Client:
 
@@ -87,35 +89,3 @@ Auth:        http://localhost:3001/api
 Product:     http://localhost:3002/api
 Transaction: http://localhost:3003/api
 ```
-
-## Test
-
-Build:
-
-```powershell
-cd auth-service
-npm.cmd run build
-
-cd ../product-service
-npm.cmd run build
-
-cd ../transaction-service
-npm.cmd run build
-```
-
-E2E smoke test:
-
-```powershell
-cd product-service
-npm.cmd run test:e2e
-
-cd ../transaction-service
-npm.cmd run test:e2e
-```
-
-## Notes
-
-- File `.env` tidak untuk di-commit. Gunakan `.env.example` sebagai template.
-- Password disimpan plain text karena mengikuti requirement project.
-- Category dibuat lewat SQL atau phpMyAdmin sebelum membuat product.
-- Checkout Transaction Service membutuhkan Product Service aktif.
