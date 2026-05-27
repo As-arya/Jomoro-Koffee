@@ -9,21 +9,21 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProductDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'Kopi Susu Jomoro' })
   @IsString()
   name!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Kopi Susu khas jomoro kaffee' })
   @IsString()
   @MinLength(20)
   description!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 15000 })
   @IsInt()
   @Min(1)
   price!: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 67 })
   @IsInt()
   @Min(0)
   @Max(999)
