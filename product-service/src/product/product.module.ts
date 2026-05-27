@@ -10,7 +10,7 @@ import { JwtStrategy } from '../auth/strategies/jwt.strategy';
   imports: [
     PrismaModule,
     PassportModule,
-    JwtModule.register({ secret: 'jomoro_secret_key' }),
+    JwtModule.register({ secret: 'secret_key' }),
   ],
   controllers: [ProductController],
   providers: [ProductService, JwtStrategy],

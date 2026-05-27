@@ -8,7 +8,7 @@ import { JwtStrategy } from './jwt.strategy';
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({
-        secret: process.env.JWT_SECRET || 'jomoro_secret_key',
+        secret: process.env.JWT_SECRET || 'secret_key',
       }),
     }),
   ],

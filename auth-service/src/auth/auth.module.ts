@@ -9,7 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   imports: [
     PassportModule,
     JwtModule.register({
-      secret: 'jomoro_secret_key',
+      secret: 'secret_key',
       signOptions: { expiresIn: '1d' },
     }),
   ],
