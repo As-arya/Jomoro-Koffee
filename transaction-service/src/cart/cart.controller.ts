@@ -1,7 +1,21 @@
-import { Controller, Get, Post, Param, Body,
-  UseGuards, Request, Headers } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation,
-  ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  ParseIntPipe,
+  UseGuards,
+  Request,
+  Headers,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AddCartDto } from './dto/add-cart.dto';
@@ -23,8 +37,11 @@ export class CartController {
   @Post()
   @ApiOperation({ summary: 'Add item to cart' })
   @ApiBody({ type: AddCartDto })
-  addToCart(@Request() req, @Body() dto: AddCartDto,
-    @Headers('authorization') token: string) {
+  addToCart(
+    @Request() req,
+    @Body() dto: AddCartDto,
+    @Headers('authorization') token: string,
+  ) {
     return this.cartService.addToCart(req.user.id, dto, token);
   }
 
@@ -38,15 +55,22 @@ export class CartController {
   @ApiOperation({ summary: 'Update cart item quantity' })
   @ApiParam({ name: 'product_id', type: Number })
   @ApiBody({ type: UpdateCartDto })
-  updateCartItem(@Request() req, @Param('product_id') productId: string,
-    @Body() dto: UpdateCartDto, @Headers('authorization') token: string) {
-    return this.cartService.updateCartItem(req.user.id, +productId, dto, token);
+  updateCartItem(
+    @Request() req,
+    @Param('product_id', ParseIntPipe) productId: number,
+    @Body() dto: UpdateCartDto,
+    @Headers('authorization') token: string,
+  ) {
+    return this.cartService.updateCartItem(req.user.id, productId, dto, token);
   }
 
   @Post(':product_id/delete')
   @ApiOperation({ summary: 'Delete item from cart' })
   @ApiParam({ name: 'product_id', type: Number })
-  deleteCartItem(@Request() req, @Param('product_id') productId: string) {
-    return this.cartService.deleteCartItem(req.user.id, +productId);
+  deleteCartItem(
+    @Request() req,
+    @Param('product_id', ParseIntPipe) productId: number,
+  ) {
+    return this.cartService.deleteCartItem(req.user.id, productId);
   }
 }

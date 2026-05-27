@@ -5,7 +5,8 @@ import { UpdateCartDto } from './dto/update-cart.dto';
 
 @Injectable()
 export class CartService {
-  private productServiceUrl = process.env.PRODUCT_SERVICE_URL;
+  private productServiceUrl =
+    process.env.PRODUCT_SERVICE_URL || 'http://localhost:3002';
 
   constructor(private prisma: PrismaService) {}
 
@@ -19,7 +20,7 @@ export class CartService {
   }
 
   async getCart(userId: number, token: string) {
-    const cart = await this.prisma.cart.findUnique({
+    const cart = await this.prisma.cart.findFirst({
       where: { user_id: userId },
       include: { cart_items: true },
     });
@@ -49,7 +50,7 @@ export class CartService {
         `Quantity (${quantity}) exceeds stock (${product.stock})`,
       );
 
-    let cart = await this.prisma.cart.findUnique({ where: { user_id: userId } });
+    let cart = await this.prisma.cart.findFirst({ where: { user_id: userId } });
     if (!cart) cart = await this.prisma.cart.create({ data: { user_id: userId } });
 
     const existing = await this.prisma.cartItem.findFirst({
@@ -70,7 +71,7 @@ export class CartService {
         `Quantity (${dto.quantity}) exceeds stock (${product.stock})`,
       );
 
-    const cart = await this.prisma.cart.findUnique({ where: { user_id: userId } });
+    const cart = await this.prisma.cart.findFirst({ where: { user_id: userId } });
     if (!cart) throw new NotFoundException('Cart not found');
 
     const item = await this.prisma.cartItem.findFirst({
@@ -83,7 +84,7 @@ export class CartService {
   }
 
   async deleteCartItem(userId: number, productId: number) {
-    const cart = await this.prisma.cart.findUnique({ where: { user_id: userId } });
+    const cart = await this.prisma.cart.findFirst({ where: { user_id: userId } });
     if (!cart) throw new NotFoundException('Cart not found');
 
     const item = await this.prisma.cartItem.findFirst({
@@ -96,7 +97,7 @@ export class CartService {
   }
 
   async clearCart(userId: number) {
-    const cart = await this.prisma.cart.findUnique({ where: { user_id: userId } });
+    const cart = await this.prisma.cart.findFirst({ where: { user_id: userId } });
     if (!cart) throw new NotFoundException('Cart not found');
     await this.prisma.cartItem.deleteMany({ where: { cart_id: cart.id } });
     return { message: 'Cart cleared successfully' };

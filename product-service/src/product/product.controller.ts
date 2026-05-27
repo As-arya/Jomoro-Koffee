@@ -1,74 +1,95 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, BadRequestException, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/createProduct.dto';
-import { ApiBearerAuth, ApiTags, ApiBody } from '@nestjs/swagger';
+import { CreateProductDto, ReduceStockDto } from './dto/createProduct.dto';
+import { ApiBearerAuth, ApiTags, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('Products')
 @Controller()
 export class ProductController {
-    constructor(private readonly productService: ProductService) { }
+  constructor(private readonly productService: ProductService) {}
 
-    @Get('products')
-    getAllProducts() {
-        return this.productService.findAllProducts();
-    }
+  @Get('products')
+  @ApiOperation({ summary: 'Get all products' })
+  getAllProducts() {
+    return this.productService.findAllProducts();
+  }
 
-    @Get('products/:id')
-    getProductById(@Param('id', ParseIntPipe) id: number) {
-        return this.productService.findProductById(id);
-    }
+  @Get('products/:id')
+  @ApiOperation({ summary: 'Get product by ID' })
+  getProductById(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.findProductById(id);
+  }
 
-    @Get('categories')
-    getAllCategories() {
-        return this.productService.findAllCategories();
-    }
+  @Get('categories')
+  @ApiOperation({ summary: 'Get all categories' })
+  getAllCategories() {
+    return this.productService.findAllCategories();
+  }
 
-    @Get('categories/:categoryId/products')
-    getProductsByCategory(@Param('categoryId', ParseIntPipe) categoryId: number) {
-        return this.productService.findProductsByCategory(categoryId);
-    }
+  @Get('categories/:categoryId/products')
+  @ApiOperation({ summary: 'Get products by category ID' })
+  getProductsByCategory(@Param('categoryId', ParseIntPipe) categoryId: number) {
+    return this.productService.findProductsByCategory(categoryId);
+  }
 
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard)
-    @Post('admin/products')
-    createProduct(@Request() req, @Body() data: CreateProductDto) {
-        if (req.user.role !== 'ADMIN') throw new UnauthorizedException('Access denied. Admin only.');
-        if (data.name.trim().split(/\s+/).length < 3) {
-            throw new BadRequestException('Product name must contain at least 3 words.');
-        }
-        return this.productService.createProduct(data);
-    }
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, new RolesGuard('ADMIN'))
+  @ApiOperation({ summary: 'Create a product' })
+  @Post('admin/products')
+  createProduct(@Body() data: CreateProductDto) {
+    return this.productService.createProduct(data);
+  }
 
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard)
-    @Post('admin/products/:id/update')
-    updateProduct(@Request() req, @Param('id', ParseIntPipe) id: number, @Body() data: CreateProductDto) {
-        if (req.user.role !== 'ADMIN') throw new UnauthorizedException('Access denied. Admin only.');
-        if (data.name.trim().split(/\s+/).length < 3) {
-            throw new BadRequestException('Product name must contain at least 3 words.');
-        }
-        return this.productService.updateProduct(id, data);
-    }
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, new RolesGuard('ADMIN'))
+  @ApiOperation({ summary: 'Update a product' })
+  @Post('admin/products/:id/update')
+  updateProduct(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: CreateProductDto,
+  ) {
+    return this.productService.updateProduct(id, data);
+  }
 
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard)
-    @ApiBody({ schema: { type: 'object', properties: { quantity: { type: 'number', example: 3 } } } }) // <--- TAMBAHIN BARIS INI
-    @Post('admin/products/:id/reduce')
-    reduceStock(
-        @Request() req,
-        @Param('id', ParseIntPipe) id: number,
-        @Body('quantity', ParseIntPipe) quantity: number
-    ) {
-        if (req.user.role !== 'ADMIN') throw new UnauthorizedException('Access denied. Admin only.');
-        return this.productService.reduceStock(id, quantity);
-    }
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, new RolesGuard('ADMIN'))
+  @ApiOperation({ summary: 'Reduce product stock' })
+  @ApiBody({ type: ReduceStockDto })
+  @Post('admin/products/:id/reduce')
+  reduceStock(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: ReduceStockDto,
+  ) {
+    return this.productService.reduceStock(id, data.quantity);
+  }
 
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard)
-    @Post('admin/products/:id/delete')
-    deleteProduct(@Request() req, @Param('id', ParseIntPipe) id: number) {
-        if (req.user.role !== 'ADMIN') throw new UnauthorizedException('Access denied. Admin only.');
-        return this.productService.deleteProduct(id);
-    }
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Reduce product stock for internal service calls' })
+  @ApiBody({ type: ReduceStockDto })
+  @Post('internal/products/:id/reduce')
+  reduceStockInternal(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: ReduceStockDto,
+  ) {
+    return this.productService.reduceStock(id, data.quantity);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, new RolesGuard('ADMIN'))
+  @ApiOperation({ summary: 'Delete a product' })
+  @Post('admin/products/:id/delete')
+  deleteProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.deleteProduct(id);
+  }
 }

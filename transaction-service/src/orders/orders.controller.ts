@@ -1,6 +1,19 @@
-import { Controller, Get, Post, Param,
-  UseGuards, Request, Headers } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+  Request,
+  Headers,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+} from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -26,8 +39,11 @@ export class OrdersController {
   @Post(':id')
   @ApiOperation({ summary: 'Get order detail by ID' })
   @ApiParam({ name: 'id', type: Number })
-  getOrderDetail(@Request() req, @Param('id') id: string,
-    @Headers('authorization') token: string) {
-    return this.ordersService.getOrderDetail(req.user.id, +id, token);
+  getOrderDetail(
+    @Request() req,
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('authorization') token: string,
+  ) {
+    return this.ordersService.getOrderDetail(req.user.id, id, token);
   }
 }

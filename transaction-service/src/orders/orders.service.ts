@@ -1,19 +1,44 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class OrdersService {
-  private productServiceUrl = process.env.PRODUCT_SERVICE_URL;
+  private productServiceUrl =
+    process.env.PRODUCT_SERVICE_URL || 'http://localhost:3002';
 
   constructor(private prisma: PrismaService) {}
 
   private async getProduct(productId: number, token: string) {
-    const res = await fetch(
-      `${this.productServiceUrl}/products/${productId}`,
-      { headers: { Authorization: token } },
-    );
+    const res = await fetch(`${this.productServiceUrl}/products/${productId}`, {
+      headers: { Authorization: token },
+    });
     if (!res.ok) throw new NotFoundException(`Product ${productId} not found`);
     return res.json();
+  }
+
+  private async reduceProductStock(
+    productId: number,
+    quantity: number,
+    token: string,
+  ) {
+    const res = await fetch(
+      `${this.productServiceUrl}/internal/products/${productId}/reduce`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token },
+        body: JSON.stringify({ quantity }),
+      },
+    );
+
+    if (!res.ok) {
+      throw new BadRequestException(
+        `Failed to reduce stock for product ${productId}`,
+      );
+    }
   }
 
   async getOrders(userId: number) {
@@ -46,7 +71,7 @@ export class OrdersService {
   }
 
   async checkout(userId: number, token: string) {
-    const cart = await this.prisma.cart.findUnique({
+    const cart = await this.prisma.cart.findFirst({
       where: { user_id: userId },
       include: { cart_items: true },
     });
@@ -56,7 +81,16 @@ export class OrdersService {
     const itemsWithPrice = await Promise.all(
       cart.cart_items.map(async (item) => {
         const product = await this.getProduct(item.product_id, token);
-        return { product_id: item.product_id, quantity: item.quantity, price: product.price };
+        if (item.quantity > product.stock) {
+          throw new BadRequestException(
+            `Quantity (${item.quantity}) exceeds stock (${product.stock})`,
+          );
+        }
+        return {
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: product.price,
+        };
       }),
     );
 
@@ -72,14 +106,7 @@ export class OrdersService {
     });
 
     for (const item of cart.cart_items) {
-      await fetch(
-        `${this.productServiceUrl}/admin/products/${item.product_id}/reduce`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: token },
-          body: JSON.stringify({ quantity: item.quantity }),
-        },
-      );
+      await this.reduceProductStock(item.product_id, item.quantity, token);
     }
 
     await this.prisma.cartItem.deleteMany({ where: { cart_id: cart.id } });

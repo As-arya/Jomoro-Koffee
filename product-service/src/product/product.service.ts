@@ -24,14 +24,15 @@ export class ProductService {
         return this.prisma.product.findMany({ where: { category_id: categoryId } });
     }
 
-
-
     async createProduct(data: CreateProductDto) {
+        await this.validateProductData(data);
         await this.prisma.product.create({ data });
         return { message: 'Product created successfully' };
     }
 
     async updateProduct(id: number, data: CreateProductDto) {
+        await this.findProductById(id);
+        await this.validateProductData(data);
         await this.prisma.product.update({ where: { id }, data });
         return { message: 'Product updated successfully' };
     }
@@ -52,7 +53,43 @@ export class ProductService {
     }
 
     async deleteProduct(id: number) {
+        await this.findProductById(id);
         await this.prisma.product.delete({ where: { id } });
         return { message: 'Product deleted successfully' };
+    }
+
+    private async validateProductData(data: CreateProductDto) {
+        if (this.countWords(data.name) < 3) {
+            throw new BadRequestException('Product name must contain at least 3 words.');
+        }
+
+        const category = await this.prisma.category.findUnique({
+            where: { id: data.category_id },
+        });
+        if (!category) {
+            throw new BadRequestException('Category not found');
+        }
+    }
+
+    private countWords(value: string) {
+        let count = 0;
+        let insideWord = false;
+
+        for (const character of value.trim()) {
+            const isSeparator =
+                character === ' ' ||
+                character === '\t' ||
+                character === '\n' ||
+                character === '\r';
+
+            if (isSeparator) {
+                insideWord = false;
+            } else if (!insideWord) {
+                count += 1;
+                insideWord = true;
+            }
+        }
+
+        return count;
     }
 }

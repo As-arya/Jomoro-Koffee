@@ -2,7 +2,8 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class ProfilesService {
-  private authServiceUrl = process.env.AUTH_SERVICE_URL;
+  private authServiceUrl =
+    process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
 
   async getProfile(token: string) {
     const res = await fetch(`${this.authServiceUrl}/profiles`, {

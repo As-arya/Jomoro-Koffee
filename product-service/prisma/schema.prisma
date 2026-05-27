@@ -19,7 +19,7 @@ model Product {
   id          Int      @id @default(autoincrement()) 
   name        String   @db.VarChar(255) 
   description String   @db.VarChar(255) 
-  price       Float    
+  price       Float    @db.Double
   stock       Int      
   image_url   String?  @db.VarChar(255) 
   category_id Int      
