@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards, Headers } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiOkResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ProfilesService } from './profiles.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -12,6 +12,8 @@ export class ProfilesController {
 
   @Get()
   @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOkResponse({ description: 'Profile returned successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   getProfile(@Headers('authorization') token: string) {
     return this.profilesService.getProfile(token);
   }

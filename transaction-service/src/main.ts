@@ -26,7 +26,5 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(3003);
-  console.log('Transaction Service: http://localhost:3003');
-  console.log('Swagger UI:         http://localhost:3003/api');
 }
 bootstrap();

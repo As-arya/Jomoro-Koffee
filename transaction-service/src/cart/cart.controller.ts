@@ -15,6 +15,9 @@ import {
   ApiOperation,
   ApiParam,
   ApiBody,
+  ApiOkResponse,
+  ApiBadRequestResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -30,6 +33,8 @@ export class CartController {
 
   @Get()
   @ApiOperation({ summary: 'Get current user cart' })
+  @ApiOkResponse({ description: 'Cart retrieved successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   getCart(@Request() req, @Headers('authorization') token: string) {
     return this.cartService.getCart(req.user.id, token);
   }
@@ -37,6 +42,9 @@ export class CartController {
   @Post()
   @ApiOperation({ summary: 'Add item to cart' })
   @ApiBody({ type: AddCartDto })
+  @ApiOkResponse({ description: 'Item added to cart successfully' })
+  @ApiBadRequestResponse({ description: 'Product already in cart or quantity exceeds stock' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   addToCart(
     @Request() req,
     @Body() dto: AddCartDto,
@@ -47,6 +55,8 @@ export class CartController {
 
   @Post('clear')
   @ApiOperation({ summary: 'Clear all items from cart' })
+  @ApiOkResponse({ description: 'Cart cleared successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   clearCart(@Request() req) {
     return this.cartService.clearCart(req.user.id);
   }
@@ -55,6 +65,9 @@ export class CartController {
   @ApiOperation({ summary: 'Update cart item quantity' })
   @ApiParam({ name: 'product_id', type: Number })
   @ApiBody({ type: UpdateCartDto })
+  @ApiOkResponse({ description: 'Cart item updated successfully' })
+  @ApiBadRequestResponse({ description: 'Item not found or quantity exceeds stock' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   updateCartItem(
     @Request() req,
     @Param('product_id', ParseIntPipe) productId: number,
@@ -67,6 +80,9 @@ export class CartController {
   @Post(':product_id/delete')
   @ApiOperation({ summary: 'Delete item from cart' })
   @ApiParam({ name: 'product_id', type: Number })
+  @ApiOkResponse({ description: 'Item removed from cart successfully' })
+  @ApiBadRequestResponse({ description: 'Item not found in cart' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   deleteCartItem(
     @Request() req,
     @Param('product_id', ParseIntPipe) productId: number,
